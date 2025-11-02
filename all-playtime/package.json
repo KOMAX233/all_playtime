@@ -3,11 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "concurrently -k -r \"npm:dev:*\"",
+    "dev:vite": "vite",
+    "dev:electron": "cross-env ELECTRON_START_URL=http://localhost:5173 electron .",
+    "build:ui": "vite build",
+    "build": "npm run build:ui",
+    "start": "electron ."
   },
   "dependencies": {
     "react": "^19.1.1",
