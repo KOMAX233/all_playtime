@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import { Layout } from './components/Layout';
+import { HomePage } from './pages.tsx/Home';
 
 function App() {
   const [msg, setMsg] = useState<string>("...")
@@ -16,10 +18,9 @@ function App() {
   }, [])
   
   return (
-    <div style={{padding: 24}}>
-      <h1>All playtime</h1>
-      <p>Electron says: {msg}</p>
-    </div>
+    <Layout>
+      <HomePage></HomePage>
+    </Layout>
   )
 }
 
