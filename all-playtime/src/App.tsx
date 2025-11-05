@@ -4,18 +4,18 @@ import { Layout } from './components/Layout';
 import { HomePage } from './pages.tsx/Home';
 
 function App() {
-  const [msg, setMsg] = useState<string>("...")
+/*   const [msg, setMsg] = useState<string>("...")
   useEffect(() => {
     (async () => {
       try {
-        const x = await window.bridge.ping()
+        const x = await window.bridge.getSteamPath()
         setMsg(String(x))
       } catch (e) {
-        setMsg("Error talking to electron.")
+        setMsg("Error finding Steam.")
         console.error(e)
       }
     })();
-  }, [])
+  }, []) */
   
   return (
     <Layout>

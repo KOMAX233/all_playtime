@@ -1,5 +1,8 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
+const { app, BrowserWindow, ipcMain } = require("electron");
+const path = require("path");
+const { exec } = require("child_process");
+const os = require("os");
+const fs = require("fs");
 
 let win;
 function create() {
@@ -24,3 +27,9 @@ function create() {
 app.whenReady().then(create);
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) create(); });
+
+// get steam path for windows from registry
+ipcMain.handle("get-steam-path", async () => {
+  const dir = null;
+  return dir;
+})
