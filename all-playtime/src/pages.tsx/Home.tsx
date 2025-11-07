@@ -59,6 +59,9 @@ export function HomePage() {
                         </select>
                     </label>
                     <button onClick={handleUserSelect} disabled={!selectedUserId}>Use this account</button>
+                    {selectedUserId && (
+                        <p>Selected userid: {selectedUserId}</p>
+                    )}
                 </div>
             )}
             {configs.length == 0 && (
