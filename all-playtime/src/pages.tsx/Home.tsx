@@ -5,9 +5,12 @@ import React, { useState } from "react";
 //     path: string;
 // }
 
+type AppsObject = Record<string, any>; 
+
 export function HomePage() {
     const [configs, setConfigs] = useState<{userId: string, path: string}[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<string>("");
+    const [apps, setApps] = useState<AppsObject | null>(null);
     const handleClick = async () => {
         const path = await window.bridge.getSteamPath();
         if (path) {
@@ -46,9 +49,10 @@ export function HomePage() {
             console.log("No config selected.");
             return;
         }
-        console.log("Chosen config:", chosen_config)
+        // console.log("Chosen config:", chosen_config)
         const apps = await window.bridge.readAppFromLocalConfig(chosen_config.path);
-        console.log("apps for", chosen_config?.userId, apps);
+        // console.log("apps for", chosen_config?.userId, apps);
+        setApps(apps);
     }
 
     return (
@@ -74,6 +78,31 @@ export function HomePage() {
                 <p>No users are found.</p>
                 )
             }
+            {apps && (
+                <table>
+                    <thead>
+                        <tr>
+                            <th>AppID</th>
+                            <th>Playtime</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {Object.entries(apps)
+                        .filter(([, appData]) => Object.prototype.hasOwnProperty.call(appData, "Playtime"))
+                        .map(([appId, appData]) => {
+                            const played_minutes_str = appData.Playtime?? "0";
+                            const played_minutes = Number(played_minutes_str) || 0;
+                            const played_hour = Math.round(played_minutes / 60 * 100) / 100;
+                            return (<tr key={appId}>
+                                <td>{appId}</td>
+                                <td>
+                                    {played_hour} hr
+                                </td>
+                            </tr>)
+                        })}
+                    </tbody>
+                </table>
+            )}
         </div>
     )
 }
