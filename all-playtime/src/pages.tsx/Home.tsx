@@ -55,6 +55,22 @@ export function HomePage() {
         setApps(apps);
     }
 
+    function computerTotalPlayedMinutes(apps: AppsObject | null): number {
+        if (!apps) {
+            return 0;
+        }
+        return Object.entries(apps)
+        .filter(([, appData]) => Object.prototype.hasOwnProperty.call(appData, "Playtime"))
+        .reduce((sum, [, appData]) => {
+            const played_minutes_str = appData.Playtime;
+            const played_minutes = Number(played_minutes_str) || 0;
+            return sum + played_minutes;
+        }, 0)
+    }
+
+    const total_played_minutes = computerTotalPlayedMinutes(apps);
+    const total_played_hours = Math.round(total_played_minutes / 60 * 100) / 100;
+
     return (
         <div>
             <button className="button" onClick={handleFindConfigs}>Find Steam Users On This Computer</button>
@@ -79,29 +95,35 @@ export function HomePage() {
                 )
             }
             {apps && (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>AppID</th>
-                            <th>Playtime</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.entries(apps)
-                        .filter(([, appData]) => Object.prototype.hasOwnProperty.call(appData, "Playtime"))
-                        .map(([appId, appData]) => {
-                            const played_minutes_str = appData.Playtime?? "0";
-                            const played_minutes = Number(played_minutes_str) || 0;
-                            const played_hour = Math.round(played_minutes / 60 * 100) / 100;
-                            return (<tr key={appId}>
-                                <td>{appId}</td>
-                                <td>
-                                    {played_hour} hr
-                                </td>
-                            </tr>)
-                        })}
-                    </tbody>
-                </table>
+                <div>
+                    <p>Played {total_played_hours} hr games on Steam</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>AppID</th>
+                                <th>Playtime</th>
+                                <th>App Image</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.entries(apps)
+                            .filter(([, appData]) => Object.prototype.hasOwnProperty.call(appData, "Playtime"))
+                            .map(([appId, appData]) => {
+                                const played_minutes_str = appData.Playtime?? "0";
+                                const played_minutes = Number(played_minutes_str) || 0;
+                                const played_hour = Math.round(played_minutes / 60 * 100) / 100;
+                                const capsule_image_url = `https://shared.akamai.steamstatic.com//store_item_assets//steam//apps//${appId}//capsule_184x69.jpg`;
+                                return (<tr key={appId}>
+                                    <td>{appId}</td>
+                                    <td>
+                                        {played_hour} hr
+                                    </td>
+                                    <td><img src={capsule_image_url} alt={`Header for app ${appId}`} /></td>
+                                </tr>)
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     )
