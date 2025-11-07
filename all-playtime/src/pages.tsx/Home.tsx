@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 // type LocalConfig = {
 //     userId: string;
@@ -7,6 +7,7 @@ import { useState } from "react";
 
 export function HomePage() {
     const [configs, setConfigs] = useState<{userId: string, path: string}[]>([]);
+    const [selectedUserId, setSelectedUserId] = useState<string>("");
     const handleClick = async () => {
         const path = await window.bridge.getSteamPath();
         if (path) {
@@ -15,9 +16,15 @@ export function HomePage() {
             console.log("Steam not Found");
         }
     }
-    const handleDetect = async () => {
+    const handleFindConfigs = async () => {
         const configs_found = await window.bridge.findLocalConfigs();
         setConfigs(configs_found);
+        // auto select first one? 
+        // TODO: decide sort users by what order
+        if (configs_found.length > 0) {
+            setSelectedUserId(configs_found[0].userId)
+        }
+
         if (configs_found.length == 0) {
             console.log("No localconfig.vdf is found.");
         } else if (configs_found.length == 1) {
@@ -26,21 +33,32 @@ export function HomePage() {
             console.log("Multiple Steam users found: ", configs_found)
         }
     }
+    
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedUserId(e.target.value);
+    }
+
+    const handleUserSelect = () => {
+        const chosen_config = configs.find((c) => {
+            return c.userId == selectedUserId;
+        })
+        console.log("Chosen config:", chosen_config)
+    }
 
     return (
         <div>
-            <button className="button" onClick={handleDetect}>button</button>
+            <button className="button" onClick={handleFindConfigs}>Find Steam Users On This Computer</button>
             {configs.length > 0 && (
                 <div>
                     <label>
                         Choose Steam user: {" "}
-                        <select>
+                        <select value={selectedUserId} onChange={handleChange}>
                             {configs.map((config) => (
                                 <option key={config.userId} value={config.userId}>{config.userId}</option>
                             ))}
                         </select>
-                        <button>Use</button>
                     </label>
+                    <button onClick={handleUserSelect} disabled={!selectedUserId}>Use this account</button>
                 </div>
             )}
             {configs.length == 0 && (
