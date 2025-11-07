@@ -5,5 +5,8 @@ contextBridge.exposeInMainWorld("bridge", {
     },
     findLocalConfigs: () => {
         return ipcRenderer.invoke("find-localconfigs")
-    } 
+    },
+    readAppFromLocalConfig: (localConfigPath) => {
+        return ipcRenderer.invoke("read-localconfig-apps", localConfigPath)
+    },
 });

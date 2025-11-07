@@ -38,11 +38,17 @@ export function HomePage() {
         setSelectedUserId(e.target.value);
     }
 
-    const handleUserSelect = () => {
+    const handleUserSelect = async () => {
         const chosen_config = configs.find((c) => {
             return c.userId == selectedUserId;
         })
+        if (!chosen_config) {
+            console.log("No config selected.");
+            return;
+        }
         console.log("Chosen config:", chosen_config)
+        const apps = await window.bridge.readAppFromLocalConfig(chosen_config.path);
+        console.log("apps for", chosen_config?.userId, apps);
     }
 
     return (

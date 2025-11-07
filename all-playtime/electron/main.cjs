@@ -3,6 +3,7 @@ const path = require("path");
 const { exec } = require("child_process");
 const os = require("os");
 const fs = require("fs");
+const { readAppFromLocalConfig } = require("./steamConfig.cjs");
 
 // get steam path for windows from registry
 function getSteamPathRegistry() {
@@ -112,4 +113,15 @@ ipcMain.handle("find-localconfigs", async () => {
   }
   // console.log(findLocalConfigs(steamdir))
   return findLocalConfigs(steamdir);
+})
+
+// ipc read from local config apps
+ipcMain.handle("read-localconfig-apps", async (_event, localConfigPath) => {
+  try {
+    const apps = readAppFromLocalConfig(localConfigPath);
+    return apps;
+  } catch (e) {
+    console.log("Failed to load localconfig.vdf: ", e);
+    return null;
+  }
 })
