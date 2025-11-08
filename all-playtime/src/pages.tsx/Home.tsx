@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 // type LocalConfig = {
 //     userId: string;
@@ -11,6 +11,10 @@ export function HomePage() {
     const [configs, setConfigs] = useState<{userId: string, path: string}[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<string>("");
     const [apps, setApps] = useState<AppsObject | null>(null);
+    const [appsDetails, setAppsDetails] = useState<Record<string, any>>({});
+    const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map());
+    const batchSize = 5;
+
     const handleClick = async () => {
         const path = await window.bridge.getSteamPath();
         if (path) {
@@ -71,6 +75,52 @@ export function HomePage() {
     const total_played_minutes = computerTotalPlayedMinutes(apps);
     const total_played_hours = Math.round(total_played_minutes / 60 * 100) / 100;
 
+    const fetchAppDetails = async (appId: string) => {
+        if (appsDetails[appId]) {
+            return;
+        }
+        // TODO: get account country or remove specific region to avoid region lock
+        const details = await window.bridge.getAppDetails(appId, "us");
+        if (!details) {
+            return null;
+        }
+        setAppsDetails((prev) => ({...prev, [appId]: details}));
+    }
+
+    useEffect(() => {
+        if (!apps) {
+            return;
+        }
+        const playableEntries= Object.entries(apps).filter(([, appData]) => Object.prototype.hasOwnProperty.call(appData, "Playtime"));
+        const observer = new IntersectionObserver((entries) => {
+            const toLoad: string[] = [];
+            for (const entry of entries) {
+                if (!entry.isIntersecting) {
+                    continue;
+                }
+                const id = (entry.target as HTMLElement).dataset.appid!;
+                if (!appsDetails[id]) {
+                    toLoad.push(id);
+                }
+                console.log("loaded", id);
+                observer.unobserve(entry.target);
+                if (toLoad.length >= batchSize) {
+                    break;
+                }
+            }
+            toLoad.forEach((id) => fetchAppDetails(id));
+        }, {
+            root: null, threshold: 0.1
+        })
+        for (const [id] of playableEntries) {
+            const rowElement = rowRefs.current.get(id);
+            if (rowElement) {
+                observer.observe(rowElement);
+            }
+        }
+        return () => observer.disconnect();
+    }, [apps]);
+
     return (
         <div>
             <button className="button" onClick={handleFindConfigs}>Find Steam Users On This Computer</button>
@@ -101,6 +151,7 @@ export function HomePage() {
                         <thead>
                             <tr>
                                 <th>AppID</th>
+                                <th>App Name</th>
                                 <th>Playtime</th>
                                 <th>App Image</th>
                             </tr>
@@ -112,13 +163,27 @@ export function HomePage() {
                                 const played_minutes_str = appData.Playtime?? "0";
                                 const played_minutes = Number(played_minutes_str) || 0;
                                 const played_hour = Math.round(played_minutes / 60 * 100) / 100;
-                                const capsule_image_url = `https://shared.akamai.steamstatic.com//store_item_assets//steam//apps//${appId}//capsule_184x69.jpg`;
-                                return (<tr key={appId}>
+
+                                const details = appsDetails[appId];
+                                const name = details?.name?? `App ${appId}`;
+                                const capsule_image_small = details?.capsule_imagev5;
+
+                                return (<tr key={appId}
+                                        ref={(rowElement) => {
+                                            if (rowElement) {
+                                                rowRefs.current.set(appId, rowElement);
+                                            } else {
+                                                rowRefs.current.delete(appId);
+                                            }
+                                        }}
+                                        data-appid={appId}
+                                        >
                                     <td>{appId}</td>
+                                    <td>{name}</td>
                                     <td>
                                         {played_hour} hr
                                     </td>
-                                    <td><img src={capsule_image_url} alt={`Header for app ${appId}`} /></td>
+                                    <td><img src={capsule_image_small} alt={`Header for app ${appId}`} /></td>
                                 </tr>)
                             })}
                         </tbody>

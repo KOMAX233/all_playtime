@@ -10,7 +10,7 @@ async function readLocalConfig(localConfigPath) {
 async function readAppFromLocalConfig(localConfigPath) {
     const data = await readLocalConfig(localConfigPath);
     const apps = data?.UserLocalConfigStore?.Software?.Valve?.Steam?.apps?? null;
-    console.dir(apps, { depth: null });
+    // console.dir(apps, { depth: null });
     return apps
 }
 

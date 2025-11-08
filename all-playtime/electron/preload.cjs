@@ -9,4 +9,7 @@ contextBridge.exposeInMainWorld("bridge", {
     readAppFromLocalConfig: (localConfigPath) => {
         return ipcRenderer.invoke("read-localconfig-apps", localConfigPath)
     },
+    getAppDetails: (appId, cc = "us") => {
+        return ipcRenderer.invoke("get-app-details", appId, cc);
+    },
 });
